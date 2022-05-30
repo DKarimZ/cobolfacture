@@ -1,0 +1,38 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. miseajourbdd.
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION. 
+       SOURCE-COMPUTER. 
+       OBJECT-COMPUTER. 
+       DATA DIVISION. 
+       WORKING-STORAGE SECTION.
+
+       *> SQL zone de communication (avec code erreurs etc)
+ 
+            COPY "sqlca.cbl".
+
+        PROCEDURE DIVISION.
+
+       0100-MAIN-PROCEDURE.
+           PERFORM 0150-CONNECT-SQL.
+           PERFORM 0200-INSERT-SQL.
+           PERFORM 0220-UPDATE-SQL.
+
+       0150-CONNECT-SQL.
+           EXEC SQL 
+                  CONNECT TO facture3 USER DB2ADMIN using hiroshima
+           END-EXEC.
+
+       0200-INSERT-SQL.
+            EXEC SQL
+                 INCLUDE generesql
+            END-EXEC.
+
+
+       0220-UPDATE-SQL.
+           EXEC SQL
+                 INCLUDE 'GENERUPDATE.SQL'
+           END-EXEC.
+
+
+       END PROGRAM miseajourbdd.

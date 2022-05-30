@@ -1,0 +1,132 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. fcdatasclient.
+
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+
+        *> SQL zone de communication (avec code erreurs etc)
+ 
+           COPY "sqlca.cbl".
+
+      *> Declaration des variables hotes utilisés lors des requêtes
+           EXEC SQL BEGIN DECLARE SECTION END-EXEC.
+        01 HV-CLIENT.
+           05 HV-CLIENT-ID            PIC S9(3) COMP-3.
+           05 HV-CLIENT-NOM           PIC X(20).
+           05 HV-CLIENT-PRENOM        PIC X(20).
+           05 HV-CLIENT-RSOCIALE      PIC X(20).
+           05 HV-CLIENT-TYPECLIENT    PIC X(20).
+           05 HV-CLIENT-EXTERNE       PIC X(4).
+           
+        01 HV-COMPTE.
+           05 HV-COMPTE-ID            PIC S9(3) COMP-3 .
+           05 HV-COMPTE-IBAN          PIC X(50).
+           05 HV-COMPTE-DTOUV         PIC X(14).
+           05 HV-COMPTE-SOLDE         PIC S9(4)V99 PACKED-DECIMAL.
+           05 HV-CLIENT-ID2           PIC S9(3) COMP-3.
+           EXEC SQL END DECLARE SECTION END-EXEC.
+       *> Création d'un curseur pour afficher  clients et leur compte
+           EXEC SQL 
+              DECLARE CLICOMPTECUR CURSOR WITH HOLD FOR
+               SELECT DISTINCT(CLIENTS.IDCLIENT), NOM, PRENOM,
+               RAISON_SOCIALE,TYPECLIENT,EXTERNE,COMPTEID,
+               IBAN,DATEOUVER,SOLDE,COMPTES.IDCLIENT
+               FROM CLIENTS
+               JOIN COMPTES ON CLIENTS.IDCLIENT = 
+               COMPTES.IDCLIENT 
+               WHERE CLIENTS.IDCLIENT = :HV-CLIENT-ID 
+               ORDER BY CLIENTS.IDCLIENT 
+           END-EXEC.
+             
+      *> Déclartion des variables de mon programme 
+        01 WS-FIELDS.
+           05 CLIENT-ID               PIC S9(3).
+           05 CLIENT-NOM              PIC X(20).
+           05 CLIENT-PRENOM           PIC X(20).
+           05 CLIENT-RSOCIALE         PIC X(20).
+           05 CLIENT-TYPECLIENT       PIC X(20).
+           05 CLIENT-EXTERNE          PIC 9.
+           05 COMPTE-ID               PIC S9(3).
+           05 COMPTE-IBAN             PIC X(25).
+           05 COMPTE-DTOUV            PIC X(14).
+           05 COMPTE-SOLDE            PIC 9(5)V99.
+           05 FILLER                  PIC X(3).
+           05 COMPTE-CLIENTID         PIC S9(3).
+          
+       LINKAGE SECTION. 
+
+         
+          77 L-CLIENT-ID               PIC S9(3).
+          77 L-CLIENT-NOM              PIC X(20).
+          77 L-CLIENT-PRENOM           PIC X(20).
+          77 L-CLIENT-RSOCIALE         PIC X(20).
+          77 L-CLIENT-TYPECLIENT       PIC X(20).
+          77 L-CLIENT-EXTERNE          PIC 9.
+          77 L-COMPTE-ID               PIC S9(3).
+          77 L-COMPTE-IBAN             PIC X(25).
+          77 L-COMPTE-DTOUV            PIC X(14).
+          77 L-COMPTE-SOLDE            PIC 9(5)V99.
+          77 L-COMPTE-CLIENTID         PIC S9(3).
+    
+         
+       PROCEDURE DIVISION USING 
+            L-CLIENT-ID         
+            L-CLIENT-NOM       
+            L-CLIENT-PRENOM    
+            L-CLIENT-RSOCIALE  
+            L-CLIENT-TYPECLIENT
+            L-CLIENT-EXTERNE   
+            L-COMPTE-ID        
+            L-COMPTE-IBAN      
+            L-COMPTE-DTOUV     
+            L-COMPTE-SOLDE          
+            L-COMPTE-CLIENTID  .
+           
+           MOVE L-CLIENT-ID TO HV-CLIENT-ID.
+           PERFORM 0200-CONNECT-BDD .
+           PERFORM 0210-OBTAIN-DATA .
+           EXIT PROGRAM.
+
+       0200-CONNECT-BDD.
+           EXEC SQL 
+            CONNECT TO facture3 USER DB2ADMIN using hiroshima
+           END-EXEC.
+       0210-OBTAIN-DATA.
+           EXEC SQL 
+              OPEN CLICOMPTECUR
+           END-EXEC.
+           PERFORM UNTIL SQLCODE = 100
+              EXEC SQL
+                 FETCH CLICOMPTECUR
+                 INTO :HV-CLIENT-ID,:HV-CLIENT-NOM, :HV-CLIENT-PRENOM,
+                 :HV-CLIENT-RSOCIALE,:HV-CLIENT-TYPECLIENT,
+                 :Hv-CLIENt-EXTERNE,:HV-COMPTE-ID,:HV-COMPTE-IBAN,
+                 :HV-COMPTE-DTOUV,:HV-COMPTE-SOLDE,:HV-CLIENT-ID2
+              END-EXEC
+           PERFORM  0300-MOVE-DATA 
+           END-PERFORM.
+           EXEC SQL 
+                 CLOSE CLICOMPTECUR
+           END-EXEC.  
+                
+       0300-MOVE-DATA.
+            MOVE HV-CLIENT-ID TO L-CLIENT-ID.
+            MOVE HV-CLIENT-NOM TO L-CLIENT-NOM.
+            MOVE HV-CLIENT-PRENOM TO L-CLIENT-PRENOM.
+            MOVE HV-CLIENT-RSOCIALE  TO L-CLIENT-RSOCIALE.
+            MOVE HV-CLIENT-TYPECLIENT TO L-CLIENT-TYPECLIENT.
+            MOVE HV-CLIENT-EXTERNE TO L-CLIENT-EXTERNE.
+            MOVE HV-COMPTE-ID TO L-COMPTE-ID.
+            MOVE HV-COMPTE-IBAN TO L-COMPTE-IBAN.
+            MOVE HV-COMPTE-DTOUV TO L-COMPTE-DTOUV.
+            MOVE HV-COMPTE-SOLDE TO L-COMPTE-SOLDE .
+            MOVE HV-CLIENT-ID2 TO L-COMPTE-CLIENTID.         
+                
+                
+                
+                
+                
+                  
+                  
+                  
+                  

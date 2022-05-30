@@ -1,0 +1,100 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. MAIN.
+       AUTHOR. D.KISAMA.
+
+      *> Ce programme permet d'imprimer dans un fichier .DAT les 
+      *> élemnts de la base de données sélectionnées 
+
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION. 
+       SOURCE-COMPUTER. 
+       OBJECT-COMPUTER. 
+
+       INPUT-OUTPUT SECTION. 
+       FILE-CONTROL.
+           SELECT PRINT-FILE ASSIGN TO "PRINTFILE.DAT"
+           ORGANIZATION IS LINE SEQUENTIAL.
+
+
+       DATA DIVISION. 
+       FILE SECTION. 
+
+       FD PRINT-FILE.
+          01 DETAILS-LINE.
+           88 ENDOffiLE                 VALUE HIGH-VALUES.
+           05 D-CLIENT-ID               PIC S9(3).
+           05 D-CLIENT-NOM              PIC X(20).
+           05 D-CLIENT-PRENOM           PIC X(20).
+           05 D-CLIENT-RSOCIALE         PIC X(20).
+           05 D-CLIENT-TYPECLIENT       PIC X(20).
+           05 D-CLIENT-EXTERNE          PIC 9.
+           05 D-COMPTE-ID               PIC S9(3).
+           05 D-COMPTE-IBAN             PIC X(25).
+           05 D-COMPTE-DTOUV            PIC X(14).
+           05 D-COMPTE-SOLDE            PIC 9(5)V99.
+           05 FILLER                  PIC X(3).
+           05 D-COMPTE-CLIENTID         PIC S9(3).
+
+       WORKING-STORAGE SECTION. 
+
+
+      *> SQL zone de communication (avec code erreurs etc)
+       
+           COPY "sqlca.cbl".
+
+      *> Declaration des variables hotes utilisés lors des requêtes
+
+
+
+
+ 
+      *> Déclartion des variables de mon programme 
+
+        01 WS-FIELDS.
+           05 CLIENT-ID               PIC S9(3).
+           05 CLIENT-NOM              PIC X(20).
+           05 CLIENT-PRENOM           PIC X(20).
+           05 CLIENT-RSOCIALE         PIC X(20).
+           05 CLIENT-TYPECLIENT       PIC X(20).
+           05 CLIENT-EXTERNE          PIC 9.
+           05 COMPTE-ID               PIC S9(3).
+           05 COMPTE-IBAN             PIC X(25).
+           05 COMPTE-DTOUV            PIC X(14).
+           05 COMPTE-SOLDE            PIC 9(5)V99.
+           05 FILLER                  PIC X(3).
+           05 COMPTE-CLIENTID         PIC S9(3).
+         
+       
+
+       PROCEDURE DIVISION.
+
+       0100-MAIN-PROCEDURE.
+           call 'MAIN'.
+           OPEN INPUT PRINT-FILE.
+           READ PRINT-FILE 
+            AT END SET ENDOFFILE TO TRUE
+            END-READ.
+           MOVE D-COMPTE-SOLDE TO COMPTE-SOLDE
+           
+
+
+       0300-PRINT-DATA.
+           MOVE HV-CLIENT-ID TO CLIENT-ID.
+           MOVE HV-CLIENT-NOM TO CLIENT-NOM.
+           MOVE HV-CLIENT-PRENOM TO CLIENT-PRENOM.
+           MOVE HV-CLIENT-RSOCIALE  TO CLIENT-RSOCIALE.
+           MOVE HV-CLIENT-TYPECLIENT TO CLIENT-TYPECLIENT.
+           MOVE HV-CLIENT-EXTERNE TO CLIENT-EXTERNE.
+           MOVE HV-COMPTE-ID TO COMPTE-ID.
+           MOVE HV-COMPTE-IBAN TO COMPTE-IBAN.
+           MOVE HV-COMPTE-DTOUV TO COMPTE-DTOUV.
+           MOVE HV-COMPTE-SOLDE TO COMPTE-SOLDE .
+           MOVE HV-CLIENT-ID2 TO COMPTE-CLIENTID.
+           MOVE Ws-FIELDS TO DETAILS-LINE.
+           WRITE DETAILS-LINE AFTER ADVANCING 1 LINE.
+
+       0900-STOP-RUN.
+           CLOSE PRINT-FILE.
+           STOP RUN.
+
+          END PROGRAM MAIN.
